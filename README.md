@@ -10,3 +10,4 @@ que permite la generación dinámica de códigos QR a partir de texto o URLs,
 •	Persistencia: Spring Data JPA con base de datos H2.
 •	Generación de Imagen: Librería Google ZXing (Zebra Crossing).
 •	Documentación de API: Swagger / OpenAPI 3.0.
+Proyecto QR hecho por Johan, Dani y Kevin 🚀
