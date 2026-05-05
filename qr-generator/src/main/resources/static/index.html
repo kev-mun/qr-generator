@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de QR | Dashboard</title>
+    <title>Panel Logístico | Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #6366f1;
-            --primary-hover: #4f46e5;
             --bg: #0f172a;
             --glass: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
@@ -16,155 +15,171 @@
 
         body {
             margin: 0;
-            padding: 40px 20px;
+            padding: 20px;
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             color: white;
-            box-sizing: border-box;
+            min-height: 100vh;
         }
 
-        nav {
-            width: 100%;
-            max-width: 800px;
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 600;
-            background: linear-gradient(to right, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .logout-btn {
-            background: rgba(239, 68, 68, 0.1);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 8px 16px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .logout-btn:hover {
-            background: rgba(239, 68, 68, 0.2);
-            transform: translateY(-1px);
+            max-width: 1000px;
+            margin: 0 auto 40px;
         }
 
         .container {
-            background: var(--glass);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            padding: 40px;
-            border-radius: 24px;
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
         }
 
-        h2 { margin: 0 0 30px 0; font-weight: 600; }
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
+        }
 
-        form { display: flex; flex-direction: column; gap: 16px; }
+        h2 { margin-top: 0; font-size: 20px; color: #818cf8; }
 
-        input {
-            padding: 14px;
+        form { display: flex; flex-direction: column; gap: 15px; }
+
+        input, textarea, select {
+            padding: 12px;
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--glass-border);
-            border-radius: 12px;
+            border-radius: 10px;
             color: white;
             font-family: inherit;
-            box-sizing: border-box;
         }
 
-        input:focus { outline: none; border-color: var(--primary); }
-
-        .btn-generate {
-            padding: 14px;
+        button {
+            padding: 12px;
             background: var(--primary);
-            color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
+            color: white;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: 0.2s;
         }
 
-        .btn-generate:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        button:hover { background: #4f46e5; }
 
-        #resultado { margin-top: 30px; }
-        
-        #resultado img {
-            max-width: 200px;
-            border-radius: 16px;
-            border: 4px solid white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .shipment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        .success-badge {
-            color: #86efac;
-            margin-top: 10px;
-            font-size: 14px;
+        .shipment-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .PENDIENTE { background: #fbbf24; color: #000; }
+        .EN_CAMINO { background: #3b82f6; color: #fff; }
+        .ENTREGADO { background: #10b981; color: #fff; }
+        .INCIDENCIA { background: #ef4444; color: #fff; }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            padding: 6px 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">QR Generator</div>
+    <div class="header">
+        <h1>Dashboard Logístico</h1>
         <form action="/logout" method="POST">
-            <button type="submit" class="logout-btn">Cerrar Sesión</button>
+            <button type="submit" style="background: #ef4444; font-size: 14px;">Cerrar Sesión</button>
         </form>
-    </nav>
+    </div>
 
     <div class="container">
-        <h2>Crear Nuevo QR</h2>
-        <form id="qrForm">
-            <input type="text" id="nombre" placeholder="Nombre del QR (ej: Mi Web)" required>
-            <input type="text" id="contenido" placeholder="URL o Texto" required>
-            <button type="submit" class="btn-generate">Generar y Guardar</button>
-        </form>
-        <div id="resultado"></div>
+        <!-- Formulario de Creación -->
+        <div class="card">
+            <h2>Nuevo Envío</h2>
+            <form id="createForm">
+                <input type="text" id="destinatario" placeholder="Nombre del Destinatario" required>
+                <textarea id="descripcion" placeholder="Descripción del Paquete" rows="3" required></textarea>
+                <button type="submit">Generar Envío y QR</button>
+            </form>
+        </div>
+
+        <!-- Lista de Envíos -->
+        <div class="card">
+            <h2>Envíos Activos</h2>
+            <div id="shipmentList" class="shipment-list">
+                <!-- Se cargan dinámicamente -->
+            </div>
+        </div>
     </div>
 
     <script>
-        document.getElementById('qrForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('.btn-generate');
-            const originalText = btn.innerText;
-            btn.innerText = 'Generando...';
-            btn.disabled = true;
-
-            const nombre = document.getElementById('nombre').value;
-            const contenido = document.getElementById('contenido').value;
-
-            try {
-                const response = await fetch(`/api/qr/generate?text=${encodeURIComponent(contenido)}&name=${encodeURIComponent(nombre)}`);
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-
-                document.getElementById('resultado').innerHTML = `
-                    <img src="${url}" alt="QR">
-                    <p class="success-badge">✓ ¡Guardado con éxito!</p>
+        async function loadShipments() {
+            const res = await fetch('/api/envios/all');
+            const data = await res.json();
+            const list = document.getElementById('shipmentList');
+            list.innerHTML = '';
+            
+            data.forEach(envio => {
+                const item = document.createElement('div');
+                item.className = 'shipment-item';
+                item.innerHTML = `
+                    <div>
+                        <strong>#${envio.trackingNumber}</strong><br>
+                        <small>${envio.destinatario}</small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="badge ${envio.estado}">${envio.estado}</span>
+                        <a href="/gestion.html?id=${envio.id}" class="button btn-action" style="text-decoration:none; color:white; background:rgba(255,255,255,0.1); border-radius:5px; padding:5px 10px;">Gestionar</a>
+                    </div>
                 `;
-            } catch (err) {
-                alert('Error al generar el QR');
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
+                list.appendChild(item);
+            });
+        }
+
+        document.getElementById('createForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const dest = document.getElementById('destinatario').value;
+            const desc = document.getElementById('descripcion').value;
+            
+            const res = await fetch(`/api/envios/crear?destinatario=${encodeURIComponent(dest)}&descripcion=${encodeURIComponent(desc)}`, {
+                method: 'POST'
+            });
+            
+            if (res.ok) {
+                alert('Envío creado con éxito');
+                loadShipments();
+                e.target.reset();
             }
         };
+
+        loadShipments();
     </script>
 </body>
 </html>
