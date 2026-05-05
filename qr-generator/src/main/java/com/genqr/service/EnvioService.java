@@ -3,6 +3,7 @@ package com.genqr.service;
 import com.genqr.model1.Envio;
 import com.genqr.model1.Estado;
 import com.genqr.model1.HistorialEstado;
+import com.genqr.model1.TrackingDTO;
 import com.genqr.repository.EnvioRepository;
 import com.genqr.repository.HistorialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +24,12 @@ public class EnvioService {
     private HistorialRepository historialRepository;
 
     @Transactional
-    public Envio crearEnvio(String descripcion, String destinatario) {
+    public Envio crearEnvio(String descripcion, String destinatario, String ciudadDestino) {
         Envio envio = new Envio();
         envio.setTrackingNumber(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         envio.setDescripcion(descripcion);
         envio.setDestinatario(destinatario);
+        envio.setCiudadDestino(ciudadDestino);
         envio.setEstado(Estado.PENDIENTE);
         envio.setFechaEstimadaEntrega(LocalDateTime.now().plusDays(3));
         
@@ -37,6 +39,27 @@ public class EnvioService {
         registrarCambioEstado(guardado, null, Estado.PENDIENTE, "Envio registrado en el sistema");
         
         return guardado;
+    }
+
+    public TrackingDTO obtenerSeguimientoPublico(String trackingNumber) {
+        Envio envio = envioRepository.findByTrackingNumber(trackingNumber)
+                .orElseThrow(() -> new RuntimeException("Código de rastreo no válido"));
+
+        TrackingDTO dto = new TrackingDTO();
+        dto.setTrackingNumber(envio.getTrackingNumber());
+        dto.setDescripcion(envio.getDescripcion());
+        dto.setEstado(envio.getEstado());
+        dto.setCiudadDestino(envio.getCiudadDestino());
+        dto.setFechaEstimadaEntrega(envio.getFechaEstimadaEntrega());
+        dto.setEvidenciaUrl(envio.getEvidenciaUrl());
+
+        List<HistorialEstado> historial = historialRepository.findByEnvioOrderByFechaCambioDesc(envio);
+        List<TrackingDTO.HistorialDTO> historialDTOs = historial.stream()
+                .map(h -> new TrackingDTO.HistorialDTO(h.getEstadoNuevo(), h.getFechaCambio(), h.getNotas()))
+                .toList();
+        
+        dto.setHistorial(historialDTOs);
+        return dto;
     }
 
     @Transactional

@@ -12,6 +12,7 @@ public class Envio {
     private String trackingNumber;
     private String descripcion;
     private String destinatario;
+    private String ciudadDestino;
 
     @Enumerated(EnumType.STRING)
     private Estado estado;
@@ -32,6 +33,9 @@ public class Envio {
 
     public String getDestinatario() { return destinatario; }
     public void setDestinatario(String destinatario) { this.destinatario = destinatario; }
+
+    public String getCiudadDestino() { return ciudadDestino; }
+    public void setCiudadDestino(String ciudadDestino) { this.ciudadDestino = ciudadDestino; }
 
     public Estado getEstado() { return estado; }
     public void setEstado(Estado estado) { this.estado = estado; }

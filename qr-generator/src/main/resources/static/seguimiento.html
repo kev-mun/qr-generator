@@ -132,13 +132,18 @@
                     <div id="estDate">---</div>
                 </div>
                 <div style="grid-column: span 2;">
-                    <div class="info-label">Destinatario</div>
-                    <div id="destName">---</div>
+                    <div class="info-label">Ciudad de Destino</div>
+                    <div id="destCity">---</div>
                 </div>
             </div>
         </div>
 
         <h3 style="margin-left: 10px; color: #818cf8;">Historial de Movimientos</h3>
+        <div id="evidenceContainer" class="card" style="display: none; text-align: center;">
+            <div class="info-label" style="margin-bottom: 15px;">Evidencia de Entrega</div>
+            <img id="evidenceImg" src="" alt="Evidencia" style="max-width: 100%; border-radius: 12px; border: 1px solid var(--glass-border);">
+        </div>
+        
         <div class="card">
             <div id="timeline" class="timeline">
                 <!-- Se cargan dinámicamente -->
@@ -148,35 +153,39 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
+        const code = urlParams.get('code'); // Usamos 'code' (trackingNumber) en lugar de ID
 
         async function loadData() {
-            if (!id) {
-                document.getElementById('mainBadge').innerText = 'ID No Encontrado';
+            if (!code) {
+                document.getElementById('mainBadge').innerText = 'Código No Encontrado';
                 return;
             }
 
             try {
-                // Info del Envío
-                const resEnvio = await fetch(`/api/envios/${id}`);
-                if (!resEnvio.ok) throw new Error('Error al obtener datos del envío');
+                // Info Pública del Envío (Llamada al endpoint filtrado)
+                const resEnvio = await fetch(`/api/envios/public/track/${code}`);
+                if (!resEnvio.ok) throw new Error('Código de rastreo no válido');
                 
                 const envio = await resEnvio.json();
                 
                 document.getElementById('mainBadge').innerText = envio.estado;
                 document.getElementById('mainBadge').className = 'status-badge ' + envio.estado;
                 document.getElementById('trackNum').innerText = '#' + (envio.trackingNumber || '---');
-                document.getElementById('destName').innerText = envio.destinatario || '---';
+                document.getElementById('destCity').innerText = envio.ciudadDestino || '---';
                 document.getElementById('estDate').innerText = envio.fechaEstimadaEntrega ? new Date(envio.fechaEstimadaEntrega).toLocaleDateString() : '---';
 
-                // Historial
-                const resHist = await fetch(`/api/envios/${id}/historial`);
-                if (resHist.ok) {
-                    const historial = await resHist.json();
-                    const timeline = document.getElementById('timeline');
-                    timeline.innerHTML = '';
+                // Mostrar evidencia si existe
+                if (envio.evidenciaUrl) {
+                    document.getElementById('evidenceContainer').style.display = 'block';
+                    document.getElementById('evidenceImg').src = envio.evidenciaUrl;
+                }
 
-                    historial.forEach(item => {
+                // Historial (Viene incluido en el TrackingDTO)
+                const timeline = document.getElementById('timeline');
+                timeline.innerHTML = '';
+
+                if (envio.historial) {
+                    envio.historial.forEach(item => {
                         const div = document.createElement('div');
                         div.className = 'timeline-item';
                         div.innerHTML = `
@@ -189,9 +198,9 @@
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById('mainBadge').innerText = 'Error de Conexión';
+                document.getElementById('mainBadge').innerText = 'Error de Rastreo';
                 document.getElementById('mainBadge').className = 'status-badge INCIDENCIA';
-                alert('No se pudo conectar con el servidor. Si estás usando un móvil, asegúrate de estar en la misma red y usar la IP de tu computadora.');
+                alert('No se pudo encontrar el envío. Verifica el código o escanea el QR nuevamente.');
             }
         }
 

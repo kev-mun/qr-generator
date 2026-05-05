@@ -3,6 +3,7 @@ package com.genqr.controller;
 import com.genqr.model1.Envio;
 import com.genqr.model1.Estado;
 import com.genqr.model1.HistorialEstado;
+import com.genqr.model1.TrackingDTO;
 import com.genqr.repository.EnvioRepository;
 import com.genqr.service.EnvioService;
 import com.genqr.service.QrService;
@@ -31,8 +32,11 @@ public class EnvioController {
 
     @PostMapping("/crear")
     @Operation(summary = "Crear nuevo envío")
-    public Envio crearEnvio(@RequestParam String descripcion, @RequestParam String destinatario) {
-        return envioService.crearEnvio(descripcion, destinatario);
+    public Envio crearEnvio(
+            @RequestParam String descripcion, 
+            @RequestParam String destinatario,
+            @RequestParam String ciudadDestino) {
+        return envioService.crearEnvio(descripcion, destinatario, ciudadDestino);
     }
 
     @GetMapping("/all")
@@ -43,6 +47,11 @@ public class EnvioController {
     @GetMapping("/{id}")
     public Envio obtenerDetalle(@PathVariable Long id) {
         return envioRepository.findById(id).orElseThrow();
+    }
+
+    @GetMapping("/public/track/{code}")
+    public TrackingDTO obtenerSeguimientoPublico(@PathVariable String code) {
+        return envioService.obtenerSeguimientoPublico(code);
     }
 
     @GetMapping("/{id}/historial")
@@ -61,8 +70,9 @@ public class EnvioController {
 
     @GetMapping(value = "/{id}/qr", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> obtenerQr(@PathVariable Long id) throws Exception {
-        // La URL que contendrá el QR para el seguimiento público
-        String urlSeguimiento = "http://localhost:8080/seguimiento.html?id=" + id;
+        Envio envio = envioRepository.findById(id).orElseThrow();
+        // La URL que contendrá el QR ahora usa el código de rastreo (trackingNumber)
+        String urlSeguimiento = "http://localhost:8080/seguimiento.html?code=" + envio.getTrackingNumber();
         byte[] image = qrService.generarQR(urlSeguimiento, 300, 300);
         return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(image);
     }

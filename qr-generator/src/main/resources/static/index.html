@@ -125,6 +125,7 @@
             <h2>Nuevo Envío</h2>
             <form id="createForm">
                 <input type="text" id="destinatario" placeholder="Nombre del Destinatario" required>
+                <input type="text" id="ciudadDestino" placeholder="Ciudad de Destino" required>
                 <textarea id="descripcion" placeholder="Descripción del Paquete" rows="3" required></textarea>
                 <button type="submit">Generar Envío y QR</button>
             </form>
@@ -166,9 +167,10 @@
         document.getElementById('createForm').onsubmit = async (e) => {
             e.preventDefault();
             const dest = document.getElementById('destinatario').value;
+            const ciudad = document.getElementById('ciudadDestino').value;
             const desc = document.getElementById('descripcion').value;
             
-            const res = await fetch(`/api/envios/crear?destinatario=${encodeURIComponent(dest)}&descripcion=${encodeURIComponent(desc)}`, {
+            const res = await fetch(`/api/envios/crear?destinatario=${encodeURIComponent(dest)}&descripcion=${encodeURIComponent(desc)}&ciudadDestino=${encodeURIComponent(ciudad)}`, {
                 method: 'POST'
             });
             
