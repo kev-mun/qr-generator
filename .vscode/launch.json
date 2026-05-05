@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-QrGeneratorApplication<qr-generator>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.genqr.QrGeneratorApplication",
+            "projectName": "qr-generator",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

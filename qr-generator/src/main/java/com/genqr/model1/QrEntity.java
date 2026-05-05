@@ -15,9 +15,23 @@ public class QrEntity {
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     // Getters y Setters (Necesarios para que Spring guarde los datos)
-    public Long getId() { return id; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public String getContenido() { return contenido; }
-    public void setContenido(String contenido) { this.contenido = contenido; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getContenido() {
+        return contenido;
+    }
+
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
+    }
 }
