@@ -92,6 +92,10 @@
         
         <div class="card qr-section">
             <h2 id="trackTitle">#---</h2>
+            <div id="pinBox" style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed var(--primary);">
+                <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">PIN DE SEGURIDAD</div>
+                <div id="displayPin" style="font-size: 24px; font-weight: 600; letter-spacing: 5px; color: #818cf8;">----</div>
+            </div>
             <img id="qrImage" class="qr-img" src="" alt="Cargando QR...">
             <p style="font-size: 14px; color: #94a3b8; margin-top: 10px;">Escanea este código para ver el seguimiento público</p>
             <div style="margin-top: 15px;">
@@ -138,6 +142,7 @@
             const res = await fetch(`/api/envios/${id}`);
             const data = await res.json();
             document.getElementById('trackTitle').innerText = '#' + data.trackingNumber;
+            document.getElementById('displayPin').innerText = data.pin || '----';
             document.getElementById('nuevoEstado').value = data.estado;
 
             // Setear link de cliente usando el código alfanumérico

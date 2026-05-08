@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seguimiento de Paquete</title>
+    <title>Seguimiento Seguro | Cliente</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -21,11 +21,13 @@
             color: white;
             display: flex;
             justify-content: center;
+            min-height: 100vh;
         }
 
         .container {
             width: 100%;
             max-width: 500px;
+            display: none; /* Se muestra tras validar PIN */
         }
 
         .card {
@@ -112,10 +114,53 @@
         }
 
         .info-label { color: #94a3b8; margin-bottom: 4px; }
+
+        /* Estilos PIN */
+        .pin-container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        .pin-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 24px;
+            text-align: center;
+            letter-spacing: 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            color: white;
+            margin: 20px 0;
+        }
+
+        .btn-verify {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Pantalla de PIN -->
+    <div id="pinScreen" class="pin-container">
+        <div class="card">
+            <h2 style="color: #818cf8;">Seguridad del Envío</h2>
+            <p style="color: #94a3b8;">Por seguridad, ingresa el PIN de 4 dígitos proporcionado para ver los detalles.</p>
+            <input type="password" id="pinInput" class="pin-input" maxlength="4" placeholder="••••">
+            <button class="btn-verify" onclick="validatePin()">Ver Detalles del Envío</button>
+        </div>
+    </div>
+
+    <!-- Contenido del Seguimiento -->
+    <div id="mainContent" class="container">
         <div class="card">
             <div class="status-header">
                 <div class="info-label">Estado Actual</div>
@@ -130,6 +175,14 @@
                 <div>
                     <div class="info-label">Entrega Estimada</div>
                     <div id="estDate">---</div>
+                </div>
+                <div>
+                    <div class="info-label">Peso</div>
+                    <div id="peso">---</div>
+                </div>
+                <div>
+                    <div class="info-label">Dimensiones</div>
+                    <div id="dimensiones">---</div>
                 </div>
                 <div style="grid-column: span 2;">
                     <div class="info-label">Ciudad de Destino</div>
@@ -153,58 +206,61 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code'); // Usamos 'code' (trackingNumber) en lugar de ID
+        const code = urlParams.get('code');
 
-        async function loadData() {
-            if (!code) {
-                document.getElementById('mainBadge').innerText = 'Código No Encontrado';
+        async function validatePin() {
+            const pin = document.getElementById('pinInput').value;
+            if (pin.length !== 4) {
+                alert('Ingresa el PIN de 4 dígitos');
                 return;
             }
 
             try {
-                // Info Pública del Envío (Llamada al endpoint filtrado)
-                const resEnvio = await fetch(`/api/envios/public/track/${code}`);
-                if (!resEnvio.ok) throw new Error('Código de rastreo no válido');
-                
-                const envio = await resEnvio.json();
-                
-                document.getElementById('mainBadge').innerText = envio.estado;
-                document.getElementById('mainBadge').className = 'status-badge ' + envio.estado;
-                document.getElementById('trackNum').innerText = '#' + (envio.trackingNumber || '---');
-                document.getElementById('destCity').innerText = envio.ciudadDestino || '---';
-                document.getElementById('estDate').innerText = envio.fechaEstimadaEntrega ? new Date(envio.fechaEstimadaEntrega).toLocaleDateString() : '---';
-
-                // Mostrar evidencia si existe
-                if (envio.evidenciaUrl) {
-                    document.getElementById('evidenceContainer').style.display = 'block';
-                    document.getElementById('evidenceImg').src = envio.evidenciaUrl;
+                const res = await fetch(`/api/envios/public/track/${code}?pin=${pin}`);
+                if (!res.ok) {
+                    const msg = await res.text();
+                    throw new Error(msg || 'PIN incorrecto');
                 }
-
-                // Historial (Viene incluido en el TrackingDTO)
-                const timeline = document.getElementById('timeline');
-                timeline.innerHTML = '';
-
-                if (envio.historial) {
-                    envio.historial.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'timeline-item';
-                        div.innerHTML = `
-                            <div class="timeline-date">${new Date(item.fechaCambio).toLocaleString()}</div>
-                            <div class="timeline-status">${item.estadoNuevo}</div>
-                            <div class="timeline-notes">${item.notas || ''}</div>
-                        `;
-                        timeline.appendChild(div);
-                    });
-                }
+                
+                const data = await res.json();
+                showData(data);
             } catch (err) {
-                console.error(err);
-                document.getElementById('mainBadge').innerText = 'Error de Rastreo';
-                document.getElementById('mainBadge').className = 'status-badge INCIDENCIA';
-                alert('No se pudo encontrar el envío. Verifica el código o escanea el QR nuevamente.');
+                alert('Error: ' + err.message);
             }
         }
 
-        loadData();
+        function showData(envio) {
+            document.getElementById('pinScreen').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+
+            document.getElementById('mainBadge').innerText = envio.estado;
+            document.getElementById('mainBadge').className = 'status-badge ' + envio.estado;
+            document.getElementById('trackNum').innerText = '#' + (envio.trackingNumber || '---');
+            document.getElementById('destCity').innerText = envio.ciudadDestino || '---';
+            document.getElementById('peso').innerText = envio.peso || 'No especificado';
+            document.getElementById('dimensiones').innerText = envio.dimensiones || 'No especificado';
+            document.getElementById('estDate').innerText = envio.fechaEstimadaEntrega ? new Date(envio.fechaEstimadaEntrega).toLocaleDateString() : '---';
+
+            if (envio.evidenciaUrl) {
+                document.getElementById('evidenceContainer').style.display = 'block';
+                document.getElementById('evidenceImg').src = envio.evidenciaUrl;
+            }
+
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+            if (envio.historial) {
+                envio.historial.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'timeline-item';
+                    div.innerHTML = `
+                        <div class="timeline-date">${new Date(item.fechaCambio).toLocaleString()}</div>
+                        <div class="timeline-status">${item.estadoNuevo}</div>
+                        <div class="timeline-notes">${item.notas || ''}</div>
+                    `;
+                    timeline.appendChild(div);
+                });
+            }
+        }
     </script>
 </body>
 </html>

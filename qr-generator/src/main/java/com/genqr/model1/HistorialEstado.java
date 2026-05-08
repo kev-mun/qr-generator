@@ -14,30 +14,62 @@ public class HistorialEstado {
     private Envio envio;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "estado_envio")
     private Estado estadoAnterior;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "estado_envio")
     private Estado estadoNuevo;
 
     private LocalDateTime fechaCambio = LocalDateTime.now();
     private String notas;
 
     // Getters y Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Envio getEnvio() { return envio; }
-    public void setEnvio(Envio envio) { this.envio = envio; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Estado getEstadoAnterior() { return estadoAnterior; }
-    public void setEstadoAnterior(Estado estadoAnterior) { this.estadoAnterior = estadoAnterior; }
+    public Envio getEnvio() {
+        return envio;
+    }
 
-    public Estado getEstadoNuevo() { return estadoNuevo; }
-    public void setEstadoNuevo(Estado estadoNuevo) { this.estadoNuevo = estadoNuevo; }
+    public void setEnvio(Envio envio) {
+        this.envio = envio;
+    }
 
-    public LocalDateTime getFechaCambio() { return fechaCambio; }
-    public void setFechaCambio(LocalDateTime fechaCambio) { this.fechaCambio = fechaCambio; }
+    public Estado getEstadoAnterior() {
+        return estadoAnterior;
+    }
 
-    public String getNotas() { return notas; }
-    public void setNotas(String notas) { this.notas = notas; }
+    public void setEstadoAnterior(Estado estadoAnterior) {
+        this.estadoAnterior = estadoAnterior;
+    }
+
+    public Estado getEstadoNuevo() {
+        return estadoNuevo;
+    }
+
+    public void setEstadoNuevo(Estado estadoNuevo) {
+        this.estadoNuevo = estadoNuevo;
+    }
+
+    public LocalDateTime getFechaCambio() {
+        return fechaCambio;
+    }
+
+    public void setFechaCambio(LocalDateTime fechaCambio) {
+        this.fechaCambio = fechaCambio;
+    }
+
+    public String getNotas() {
+        return notas;
+    }
+
+    public void setNotas(String notas) {
+        this.notas = notas;
+    }
 }

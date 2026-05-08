@@ -24,26 +24,37 @@ public class EnvioService {
     private HistorialRepository historialRepository;
 
     @Transactional
-    public Envio crearEnvio(String descripcion, String destinatario, String ciudadDestino) {
+    public Envio crearEnvio(String descripcion, String destinatario, String ciudadDestino, String peso, String dimensiones) {
         Envio envio = new Envio();
         envio.setTrackingNumber(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         envio.setDescripcion(descripcion);
         envio.setDestinatario(destinatario);
         envio.setCiudadDestino(ciudadDestino);
+        envio.setPeso(peso);
+        envio.setDimensiones(dimensiones);
         envio.setEstado(Estado.PENDIENTE);
         envio.setFechaEstimadaEntrega(LocalDateTime.now().plusDays(3));
+        
+        // Generar PIN de 4 dígitos
+        String pin = String.format("%04d", (int)(Math.random() * 10000));
+        envio.setPin(pin);
         
         Envio guardado = envioRepository.save(envio);
 
         // Registrar historial inicial
-        registrarCambioEstado(guardado, null, Estado.PENDIENTE, "Envio registrado en el sistema");
+        registrarCambioEstado(guardado, null, Estado.PENDIENTE, "Envio registrado en el sistema con PIN de seguridad");
         
         return guardado;
     }
 
-    public TrackingDTO obtenerSeguimientoPublico(String trackingNumber) {
+    public TrackingDTO obtenerSeguimientoPublico(String trackingNumber, String pin) {
         Envio envio = envioRepository.findByTrackingNumber(trackingNumber)
                 .orElseThrow(() -> new RuntimeException("Código de rastreo no válido"));
+
+        // Validar PIN
+        if (pin == null || !pin.equals(envio.getPin())) {
+            throw new RuntimeException("PIN de seguridad incorrecto");
+        }
 
         TrackingDTO dto = new TrackingDTO();
         dto.setTrackingNumber(envio.getTrackingNumber());
@@ -52,6 +63,8 @@ public class EnvioService {
         dto.setCiudadDestino(envio.getCiudadDestino());
         dto.setFechaEstimadaEntrega(envio.getFechaEstimadaEntrega());
         dto.setEvidenciaUrl(envio.getEvidenciaUrl());
+        dto.setPeso(envio.getPeso());
+        dto.setDimensiones(envio.getDimensiones());
 
         List<HistorialEstado> historial = historialRepository.findByEnvioOrderByFechaCambioDesc(envio);
         List<TrackingDTO.HistorialDTO> historialDTOs = historial.stream()

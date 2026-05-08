@@ -126,6 +126,8 @@
             <form id="createForm">
                 <input type="text" id="destinatario" placeholder="Nombre del Destinatario" required>
                 <input type="text" id="ciudadDestino" placeholder="Ciudad de Destino" required>
+                <input type="text" id="peso" placeholder="Peso (ej: 2.5kg)">
+                <input type="text" id="dimensiones" placeholder="Dimensiones (ej: 30x20x10 cm)">
                 <textarea id="descripcion" placeholder="Descripción del Paquete" rows="3" required></textarea>
                 <button type="submit">Generar Envío y QR</button>
             </form>
@@ -153,6 +155,7 @@
                 item.innerHTML = `
                     <div>
                         <strong>#${envio.trackingNumber}</strong><br>
+                        <small style="color: #818cf8; font-weight: 600;">PIN: ${envio.pin}</small><br>
                         <small>${envio.destinatario}</small>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -168,16 +171,27 @@
             e.preventDefault();
             const dest = document.getElementById('destinatario').value;
             const ciudad = document.getElementById('ciudadDestino').value;
+            const peso = document.getElementById('peso').value;
+            const dim = document.getElementById('dimensiones').value;
             const desc = document.getElementById('descripcion').value;
             
-            const res = await fetch(`/api/envios/crear?destinatario=${encodeURIComponent(dest)}&descripcion=${encodeURIComponent(desc)}&ciudadDestino=${encodeURIComponent(ciudad)}`, {
-                method: 'POST'
-            });
-            
-            if (res.ok) {
-                alert('Envío creado con éxito');
-                loadShipments();
-                e.target.reset();
+            try {
+                const res = await fetch(`/api/envios/crear?destinatario=${encodeURIComponent(dest)}&descripcion=${encodeURIComponent(desc)}&ciudadDestino=${encodeURIComponent(ciudad)}&peso=${encodeURIComponent(peso)}&dimensiones=${encodeURIComponent(dim)}`, {
+                    method: 'POST'
+                });
+                
+                if (res.ok) {
+                    const envio = await res.json();
+                    alert(`¡Envío creado con éxito!\n\nCÓDIGO DE RASTREO: ${envio.trackingNumber}\nPIN DE SEGURIDAD: ${envio.pin}\n\nEntrega este PIN al cliente para que pueda ver los detalles.`);
+                    loadShipments();
+                    e.target.reset();
+                } else {
+                    const errorData = await res.text();
+                    alert('Error del servidor: ' + res.status + ' - ' + errorData);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión: ' + error.message);
             }
         };
 

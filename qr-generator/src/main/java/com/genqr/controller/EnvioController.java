@@ -35,8 +35,10 @@ public class EnvioController {
     public Envio crearEnvio(
             @RequestParam String descripcion, 
             @RequestParam String destinatario,
-            @RequestParam String ciudadDestino) {
-        return envioService.crearEnvio(descripcion, destinatario, ciudadDestino);
+            @RequestParam String ciudadDestino,
+            @RequestParam(required = false) String peso,
+            @RequestParam(required = false) String dimensiones) {
+        return envioService.crearEnvio(descripcion, destinatario, ciudadDestino, peso, dimensiones);
     }
 
     @GetMapping("/all")
@@ -50,8 +52,10 @@ public class EnvioController {
     }
 
     @GetMapping("/public/track/{code}")
-    public TrackingDTO obtenerSeguimientoPublico(@PathVariable String code) {
-        return envioService.obtenerSeguimientoPublico(code);
+    public TrackingDTO obtenerSeguimientoPublico(
+            @PathVariable String code, 
+            @RequestParam(required = false) String pin) {
+        return envioService.obtenerSeguimientoPublico(code, pin);
     }
 
     @GetMapping("/{id}/historial")
